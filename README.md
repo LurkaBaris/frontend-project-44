@@ -62,6 +62,7 @@ npm run brain-prime
 ![Неудачное окончание](images/lose.jpg)
 
 **Прогресс**:
+
 ![Прогресс](images/progress.jpg)
 
 ## Прогресс
