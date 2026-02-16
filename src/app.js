@@ -85,6 +85,11 @@ const runApp = () => {
 
   while (true) {
     printMainMenu(user);
+    if (process.stdin.readableEnded || !process.stdin.readable) {
+      saveProgress(store);
+      console.log(`Bye, ${name}!`);
+      return;
+    }
     let choice;
     try {
       const raw = readlineSync.question(chalk.bold("> "));
