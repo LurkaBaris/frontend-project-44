@@ -75,7 +75,14 @@ const runApp = () => {
 
   while (true) {
     printMainMenu(user);
-    const choice = readlineSync.question(chalk.bold("> ")).trim();
+    let choice;
+    try {
+      choice = readlineSync.question(chalk.bold("> ")).trim();
+    } catch (_e) {
+      saveProgress(store);
+      console.log(`Bye, ${name}!`);
+      return;
+    }
     const choiceLower = choice.toLowerCase();
 
     if (choiceLower === "0" || choiceLower === "exit" || choiceLower === "q") {
