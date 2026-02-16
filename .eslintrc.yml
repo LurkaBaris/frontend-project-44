@@ -1,0 +1,13 @@
+env:
+  node: true
+  es2024: true
+
+extends:
+  - eslint:recommended
+
+parserOptions:
+  ecmaVersion: 2024
+  sourceType: script
+
+rules:
+  no-constant-condition: off
