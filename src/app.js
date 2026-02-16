@@ -58,6 +58,18 @@ const printMainMenu = (user) => {
   console.log(`  ${chalk.bold("0")} - exit`);
 };
 
+const EXIT_ALIASES = ["0", "exit", "q"];
+const isExitChoice = (choiceLower) => EXIT_ALIASES.includes(choiceLower);
+const isProgressChoice = (choiceLower) =>
+  choiceLower === "p" || choiceLower === "progress";
+const isResetChoice = (choiceLower) =>
+  choiceLower === "r" || choiceLower === "reset";
+
+const getSelectedGame = (choice, previousGameKey) =>
+  choice.trim() === ""
+    ? pickRandomGame(previousGameKey)
+    : resolveGameChoice(choice);
+
 const runApp = () => {
   const store = loadProgress();
   const name = greet();
@@ -65,11 +77,9 @@ const runApp = () => {
   const user = getOrCreateUser(store, name);
   saveProgress(store);
 
-  if (existed) {
-    console.log(chalk.dim("Loaded your saved progress."));
-  } else {
-    console.log(chalk.dim("Created a new profile for you."));
-  }
+  console.log(
+    chalk.dim(existed ? "Loaded your saved progress." : "Created a new profile for you.")
+  );
 
   let previousGameKey = null;
 
@@ -77,7 +87,13 @@ const runApp = () => {
     printMainMenu(user);
     let choice;
     try {
-      choice = readlineSync.question(chalk.bold("> ")).trim();
+      const raw = readlineSync.question(chalk.bold("> "));
+      if (raw === undefined || raw === null) {
+        saveProgress(store);
+        console.log(`Bye, ${name}!`);
+        return;
+      }
+      choice = raw.trim();
     } catch (_e) {
       saveProgress(store);
       console.log(`Bye, ${name}!`);
@@ -85,30 +101,26 @@ const runApp = () => {
     }
     const choiceLower = choice.toLowerCase();
 
-    if (choiceLower === "0" || choiceLower === "exit" || choiceLower === "q") {
+    if (isExitChoice(choiceLower)) {
       saveProgress(store);
       console.log(`Bye, ${name}!`);
       return;
     }
 
-    if (choiceLower === "p" || choiceLower === "progress") {
+    if (isProgressChoice(choiceLower)) {
       console.log(formatProgress(user, gamesList));
       console.log(chalk.dim(`Saved at: ${PROGRESS_FILE}`));
       continue;
     }
 
-    if (choiceLower === "r" || choiceLower === "reset") {
+    if (isResetChoice(choiceLower)) {
       resetUserProgress(store, user.nickname);
       saveProgress(store);
       console.log(chalk.yellow("Progress reset."));
       continue;
     }
 
-    const game =
-      choice.trim() === ""
-        ? pickRandomGame(previousGameKey)
-        : resolveGameChoice(choice);
-
+    const game = getSelectedGame(choice, previousGameKey);
     if (!game) {
       console.log(chalk.red("Unknown choice. Try again."));
       continue;
@@ -126,7 +138,7 @@ const runApp = () => {
       showCongratulations: false,
     });
 
-    if (result && result.exited) {
+    if (result?.exited) {
       saveProgress(store);
       console.log(`Bye, ${name}!`);
       return;

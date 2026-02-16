@@ -27,9 +27,18 @@ const runGame = (game, options = {}) => {
   while (true) {
     const { question, answer } = game.getRound();
     console.log(`${chalk.bold("Question:")} ${question}`);
-    const userAnswerRaw = readlineSync
-      .question(chalk.bold("Your answer: "))
-      .trim();
+    let userAnswerRaw;
+    try {
+      userAnswerRaw = readlineSync.question(chalk.bold("Your answer: "));
+    } catch (_e) {
+      saveProgress(store);
+      return { exited: true };
+    }
+    if (userAnswerRaw === undefined || userAnswerRaw === null) {
+      saveProgress(store);
+      return { exited: true };
+    }
+    userAnswerRaw = userAnswerRaw.trim();
     const userAnswer =
       userAnswerRaw.toLowerCase() === EXIT_COMMAND
         ? EXIT_COMMAND
